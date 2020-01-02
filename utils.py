@@ -1,4 +1,9 @@
+import wget
+import requests
 from PyInquirer import prompt, Token
+from pprint import pprint
+from operator import itemgetter
+from os.path import expanduser
 
 def print_logo():
   print(
@@ -21,7 +26,7 @@ def prompt_start():
       'type': 'input',
       'name': 'path',
       'message': 'Carpeta de descarga: ',
-      'default': '~/torrentScrap',
+      'default': F'{expanduser("~")}/torrentScrap',
     },
     {
       'type': 'input',
@@ -39,7 +44,6 @@ def create_folder(path):
 
   # check if the path exist
     # create the path
-
 
 def entries_questions(entries):
     choices = []
@@ -65,3 +69,52 @@ def entries_questions(entries):
 def prompt_entries(entries):
     answers = prompt(entries_questions(entries))
     return int(answers.get('entries', '0'))
+
+
+
+def links_questions(entry):
+    name, download = itemgetter('name', 'download')(entry)
+    choices = []
+
+    for entry in download:
+        link = entry.get('link', '')
+        if (link):
+            choices.append({
+                'name': entry.get('name', ''),
+                'value': link,
+            })
+
+    return [
+        {
+            'type': 'checkbox',
+            'message': 'Selecciona los enlaces',
+            'name': 'links',
+            'choices': sorted(choices, key=itemgetter('name')) ,
+            'validate': lambda answer: 'You must choose at least one link' \
+                if len(answer) == 0 else True
+        }
+    ]
+
+def prompt_links(entry):
+    download = itemgetter('download')(entry)
+
+    if (len(download) == 1):
+        return [download[0]['link']]
+    
+    if (len(download) > 1):
+        answers = prompt(links_questions(entry))
+        return answers.get('links', None)
+
+def download(links, path):
+    print(F'Descargando {len(links)} elementos')
+    for url in links:
+        filename = url.split('/')[-1]
+        myfile = requests.get(url)
+        open(F'{path}/{filename}', 'wb').write(myfile.content)
+
+        # wget.download(url, F'{path}/{filename}')
+
+    print(F'Elementos descargados en {path}')
+
+
+

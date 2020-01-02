@@ -11,7 +11,7 @@ def main():
   options = prompt_start()
   path, term = itemgetter('path', 'term')(options)
 
-  create_folder(path)
+  # create_folder(path)
 
   session = HTMLSession()
   entries = findEntries(session, term)
@@ -19,16 +19,10 @@ def main():
   selected_index = prompt_entries(entries)
   entry = entries[selected_index]
 
-  # hacer full disclosure del elegido
-  full = fullDisclosure(session, entry)
+  disclosure = fullDisclosure(session, entry)
+  download_links = prompt_links(disclosure)
 
-  pprint(full)
-
-  # pintar todos los enlaces
-
-  # marcar los que se quieran descargar (1 a 1 o todos)
-
-  # descargar en la carpeta indicada
+  download(download_links, path)
 
 
 if __name__ == '__main__':
